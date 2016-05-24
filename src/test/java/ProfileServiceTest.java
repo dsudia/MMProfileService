@@ -317,7 +317,7 @@ public class ProfileServiceTest {
 
     @Test
     public void updateUserCorrectlyChangesInformation() throws Exception() {
-
+        
     }
 
     @Test
