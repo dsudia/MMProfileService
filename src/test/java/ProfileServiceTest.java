@@ -1,6 +1,7 @@
 import com.goebl.david.Request;
 import com.goebl.david.Response;
 import com.goebl.david.Webb;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -204,10 +205,10 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "Profile created for testy@test.com");
-        expected.put("status", 201);
+        expected.put("message", "Missing email address for creation");
+        expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
-        assertEquals(201, response.getStatusCode());
+        assertEquals(400, response.getStatusCode());
     }
 
     @Test
@@ -226,31 +227,92 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "Profile created for testy@test.com");
-        expected.put("status", 201);
+        expected.put("message", "Missing display name for creation");
+        expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
-        assertEquals(201, response.getStatusCode());
+        assertEquals(400, response.getStatusCode());
     }
 
     @Test
     public void getUserByEmailReturnsAllUserInfo() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        obj.put("last_name", "McTestface");
+        obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
+        obj.put("state", "CO");
+        obj.put("avatar_url", "http://someurl.com/myimg");
         String payload = obj.toString();
         Webb webb = Webb.create();
         Request request = webb
                 .get("http://localhost:8000/get")
                 .body(payload);
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Returning profile");
+        expected.put("status", 200);
+        expected.put("profile", obj);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test
     public void getUserByWrongEmailReturnsError() throws Exception {
-
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        String payload = obj.toString();
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/get")
+                .body(payload);
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "User does not exist in database");
+        expected.put("status", 409);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(409, response.getStatusCode());
     }
 
     @Test
     public void newUserHasBlankArrayInFollowedAndStaff() throws Exception {
-
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        String payload = obj.toString();
+        Webb webb = Webb.create();
+        Request createRequest = webb
+                .post("http://localhost:8000/create")
+                .body(payload);
+//        Thread.sleep(20);
+        obj.remove("display_name");
+        payload = obj.toString();
+        Request getRequest = webb
+                .post("http://localhost:8000/get")
+                .body(payload);
+        Response<JSONObject> response = getRequest
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        obj.put("followedAndStaff", jsonArray);
+        expected.put("message", "Returning profile");
+        expected.put("status", 200);
+        expected.put("profile", obj);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(409, response.getStatusCode());
     }
 
     @Test
