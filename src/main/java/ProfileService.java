@@ -29,8 +29,6 @@ public class ProfileService {
         post("*", error);
         put("*", error);
         delete("*", error);
-
-
     }
 
     private static Route error = new Route() {
