@@ -291,9 +291,6 @@ public class ProfileServiceTest {
         obj.put("email", "testy@test.com");
         obj.put("display_name", "Testy");
         obj.put("last_name", "McTestface");
-        obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
-        obj.put("state", "CO");
-        obj.put("avatar_url", "http://someurl.com/myimg");
         String payload = obj.toString();
         Webb webb = Webb.create();
         Request createRequest = webb
@@ -320,17 +317,80 @@ public class ProfileServiceTest {
         JSONArray jsonArray = new JSONArray();
         obj.put("followedAndStaff", jsonArray);
         JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
-        assertEquals(201, response.getStatusCode());
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
-    public void followUserAppendsUserToArray() throws Exception {
-
+    public void followUserAppendsEmailToArray() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        String payload = obj.toString();
+        Webb webb = Webb.create();
+        Request createRequest = webb
+                .post("http://localhost:8000/create")
+                .body(payload);
+        obj.remove("display_name");
+        obj.put("follow", "another@email.com");
+        payload = obj.toString();
+        Request followRequest = webb
+                .put("http://localhost:8000/follow")
+                .body(payload);
+        obj.remove("follow");
+        payload = obj.toString();
+        Request getRequest = webb
+                .post("http://localhost:8000/get")
+                .body(payload);
+        Response<JSONObject> response = getRequest
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(0, "another@email.com");
+        obj.put("followedAndStaff", jsonArray);
+        JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
     public void unfollowUserRemovesEmailFromArray() throws Exception {
-
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        String payload = obj.toString();
+        Webb webb = Webb.create();
+        Request createRequest = webb
+                .post("http://localhost:8000/create")
+                .body(payload);
+        obj.remove("display_name");
+        obj.put("follow", "another@email.com");
+        payload = obj.toString();
+        Request followRequest = webb
+                .put("http://localhost:8000/follow")
+                .body(payload);
+        obj.remove("follow");
+        obj.put("unfollow", "another@email.com");
+        payload = obj.toString();
+        Request unfollowRequest = webb
+                .put("http://localhost:8000/unfollow")
+                .body(payload);
+        obj.remove("unfollow");
+        payload = obj.toString();
+        Request getRequest = webb
+                .post("http://localhost:8000/get")
+                .body(payload);
+        Response<JSONObject> response = getRequest
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONArray jsonArray = new JSONArray();
+        obj.put("followedAndStaff", jsonArray);
+        JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test
