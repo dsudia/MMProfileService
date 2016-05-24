@@ -392,18 +392,4 @@ public class ProfileServiceTest {
         JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
         assertEquals(200, response.getStatusCode());
     }
-
-    @Test
-    public void followUserOnlyAcceptsString() throws Exception {
-
-    }
-
-    @Test
-    public void unfollowUserOnlyAcceptsString() throws Exception {
-
-    }
-
-
-
-
 }
