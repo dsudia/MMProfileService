@@ -253,6 +253,8 @@ public class ProfileServiceTest {
         if (result == null) {
             result = new JSONObject(response.getErrorBody().toString());
         }
+        JSONArray jsonArray = new JSONArray();
+        obj.put("followedAndStaff", jsonArray);
         JSONObject expected = new JSONObject();
         expected.put("message", "Returning profile");
         expected.put("status", 200);
@@ -284,18 +286,28 @@ public class ProfileServiceTest {
     }
 
     @Test
-    public void newUserHasBlankArrayInFollowedAndStaff() throws Exception {
+    public void updateUserCorrectlyChangesInformation() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
         obj.put("display_name", "Testy");
+        obj.put("last_name", "McTestface");
+        obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
+        obj.put("state", "CO");
+        obj.put("avatar_url", "http://someurl.com/myimg");
         String payload = obj.toString();
         Webb webb = Webb.create();
         Request createRequest = webb
                 .post("http://localhost:8000/create")
                 .body(payload);
-//        Thread.sleep(20);
-        obj.remove("display_name");
+        obj.remove("last_name");
+        obj.put("last_name", "Differentlastname");
         payload = obj.toString();
+        Request updateRequest = webb
+                .put("http://localhost:8000/update")
+                .body(payload);
+        JSONObject getObj = new JSONObject();
+        getObj.put("email", "testy@test.com");
+        payload = getObj.toString();
         Request getRequest = webb
                 .post("http://localhost:8000/get")
                 .body(payload);
@@ -305,19 +317,10 @@ public class ProfileServiceTest {
         if (result == null) {
             result = new JSONObject(response.getErrorBody().toString());
         }
-        JSONObject expected = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         obj.put("followedAndStaff", jsonArray);
-        expected.put("message", "Returning profile");
-        expected.put("status", 200);
-        expected.put("profile", obj);
-        JSONAssert.assertEquals(expected, result, true);
-        assertEquals(409, response.getStatusCode());
-    }
-
-    @Test
-    public void updateUserCorrectlyChangesInformation() throws Exception() {
-        
+        JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test
