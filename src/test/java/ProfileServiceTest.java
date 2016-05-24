@@ -140,21 +140,88 @@ public class ProfileServiceTest {
 
     @Test
     public void createUserWithAllInfoCreatesUser() throws Exception {
-
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/create")
+                .param("email", "testy@test.com")
+                .param("display_name", "Testy")
+                .param("last_name", "McTestface")
+                .param("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.")
+                .param("state", "CO")
+                .param("avatar_url", "http://someurl.com/myimg");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Profile created for testy@test.com");
+        expected.put("status", 201);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test
     public void createUserWithMinimumInfoCreatesUser() throws Exception {
-
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/create")
+                .param("email", "testy@test.com")
+                .param("display_name", "Testy");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Profile created for testy@test.com");
+        expected.put("status", 201);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test
     public void createUserWithoutEmailSendsError() throws Exception {
-
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/create")
+                .param("display_name", "Testy");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Profile created for testy@test.com");
+        expected.put("status", 201);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test
     public void createUserWithoutDisplayNameSendsError() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/create")
+                .param("email", "testy@test.com");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Profile created for testy@test.com");
+        expected.put("status", 201);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(201, response.getStatusCode());
+    }
+
+    @Test
+    public void newUserHasBlankArrayInFollowedAndStaff() throws Exception {
 
     }
 
