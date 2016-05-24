@@ -140,15 +140,18 @@ public class ProfileServiceTest {
 
     @Test
     public void createUserWithAllInfoCreatesUser() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        obj.put("last_name", "McTestface");
+        obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
+        obj.put("state", "CO");
+        obj.put("avatar_url", "http://someurl.com/myimg");
+        String payload = obj.toString();
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
-                .param("email", "testy@test.com")
-                .param("display_name", "Testy")
-                .param("last_name", "McTestface")
-                .param("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.")
-                .param("state", "CO")
-                .param("avatar_url", "http://someurl.com/myimg");
+                .body(payload);
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = response.getBody();
@@ -164,11 +167,14 @@ public class ProfileServiceTest {
 
     @Test
     public void createUserWithMinimumInfoCreatesUser() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        obj.put("display_name", "Testy");
+        String payload = obj.toString();
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
-                .param("email", "testy@test.com")
-                .param("display_name", "Testy");
+                .body(payload);
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = response.getBody();
@@ -184,10 +190,13 @@ public class ProfileServiceTest {
 
     @Test
     public void createUserWithoutEmailSendsError() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("display_name", "Testy");
+        String payload = obj.toString();
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
-                .param("display_name", "Testy");
+                .body(payload);
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = response.getBody();
@@ -203,10 +212,13 @@ public class ProfileServiceTest {
 
     @Test
     public void createUserWithoutDisplayNameSendsError() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        String payload = obj.toString();
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
-                .param("email", "testy@test.com");
+                .body(payload);
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = response.getBody();
@@ -221,12 +233,23 @@ public class ProfileServiceTest {
     }
 
     @Test
-    public void newUserHasBlankArrayInFollowedAndStaff() throws Exception {
+    public void getUserByEmailReturnsAllUserInfo() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        String payload = obj.toString();
+        Webb webb = Webb.create();
+        Request request = webb
+                .get("http://localhost:8000/get")
+                .body(payload);
+    }
+
+    @Test
+    public void getUserByWrongEmailReturnsError() throws Exception {
 
     }
 
     @Test
-    public void getUserByEmailReturnsAllUserInfo() throws Exception {
+    public void newUserHasBlankArrayInFollowedAndStaff() throws Exception {
 
     }
 
