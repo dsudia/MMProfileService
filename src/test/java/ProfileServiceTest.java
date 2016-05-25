@@ -31,6 +31,7 @@ public class ProfileServiceTest {
         }
         Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=postgres");
         Statement statement = connection.createStatement();
+        String dropQuery = "DROP TABLE IF EXISTS public.profiles";
         String query = "CREATE TABLE public.profiles\n" +
                 "(\n" +
                 "  CONSTRAINT users_pkey PRIMARY KEY (email)\n" +
@@ -41,6 +42,7 @@ public class ProfileServiceTest {
                 "  avatar_url character varying,\n" +
                 "  followed_and_staff VARCHAR[]" +
                 ")";
+        statement.execute(dropQuery);
         statement.execute(query);
         statement.close();
         connection.close();
