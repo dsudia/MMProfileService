@@ -36,7 +36,7 @@ public class ProfileServiceTest {
                 "(\n" +
                 "  email character varying NOT NULL,\n" +
                 "  CONSTRAINT users_pkey PRIMARY KEY (email),\n" +
-                "  display_name character varying NOT NULL,\n" +
+                "  display_ame character varying NOT NULL,\n" +
                 "  last_name character varying,\n" +
                 "  description VARCHAR,\n" +
                 "  state character varying,\n" +
@@ -146,11 +146,11 @@ public class ProfileServiceTest {
     public void createUserWithAllInfoCreatesUser() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
-        obj.put("last_name", "McTestface");
+        obj.put("displayName", "Testy");
+        obj.put("lastName", "McTestface");
         obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
         obj.put("state", "CO");
-        obj.put("avatar_url", "http://someurl.com/myimg");
+        obj.put("avatarUrl", "http://someurl.com/myimg");
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
@@ -172,7 +172,7 @@ public class ProfileServiceTest {
     public void createUserWithMinimumInfoCreatesUser() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
+        obj.put("displayName", "Testy");
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
@@ -193,7 +193,7 @@ public class ProfileServiceTest {
     @Test
     public void createUserWithoutEmailSendsError() throws Exception {
         JSONObject obj = new JSONObject();
-        obj.put("display_name", "Testy");
+        obj.put("displayName", "Testy");
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8000/create")
@@ -236,11 +236,11 @@ public class ProfileServiceTest {
     public void getUserByEmailReturnsAllUserInfo() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
-        obj.put("last_name", "McTestface");
+        obj.put("displayName", "Testy");
+        obj.put("lastName", "McTestface");
         obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
         obj.put("state", "CO");
-        obj.put("avatar_url", "http://someurl.com/myimg");
+        obj.put("avatarUrl", "http://someurl.com/myimg");
         Webb webb = Webb.create();
         Request request = webb
                 .get("http://localhost:8000/get")
@@ -286,15 +286,15 @@ public class ProfileServiceTest {
     public void updateUserCorrectlyChangesInformation() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
-        obj.put("last_name", "McTestface");
+        obj.put("displayName", "Testy");
+        obj.put("lastName", "McTestface");
         Webb webb = Webb.create();
         Request createRequest = webb
                 .post("http://localhost:8000/create")
                 .body(obj);
-        obj.remove("display_name");
-        obj.remove("last_name");
-        obj.put("last_name", "Differentlastname");
+        obj.remove("displayName");
+        obj.remove("lastName");
+        obj.put("lastName", "Differentlastname");
         Request updateRequest = webb
                 .put("http://localhost:8000/update")
                 .body(obj);
@@ -319,12 +319,12 @@ public class ProfileServiceTest {
     public void followUserAppendsEmailToArray() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
+        obj.put("displayName", "Testy");
         Webb webb = Webb.create();
         Request createRequest = webb
                 .post("http://localhost:8000/create")
                 .body(obj);
-        obj.remove("display_name");
+        obj.remove("displayName");
         obj.put("follow", "another@email.com");
         Request followRequest = webb
                 .put("http://localhost:8000/follow")
@@ -354,7 +354,7 @@ public class ProfileServiceTest {
         Request request = webb
                 .post("http://localhost:8000/create")
                 .body(obj);
-        obj.remove("display_name");
+        obj.remove("displayName");
         obj.put("follow", "another@email.com");
         Request followRequest = webb
                 .put("http://localhost:8000/follow")
@@ -376,12 +376,12 @@ public class ProfileServiceTest {
     public void unfollowUserRemovesEmailFromArray() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
-        obj.put("display_name", "Testy");
+        obj.put("displayName", "Testy");
         Webb webb = Webb.create();
         Request createRequest = webb
                 .post("http://localhost:8000/create")
                 .body(obj);
-        obj.remove("display_name");
+        obj.remove("displayName");
         obj.put("follow", "another@email.com");
         Request followRequest = webb
                 .put("http://localhost:8000/follow")
@@ -415,7 +415,7 @@ public class ProfileServiceTest {
         Request request = webb
                 .post("http://localhost:8000/get")
                 .body(obj);
-        obj.remove("display_name");
+        obj.remove("displayName");
         obj.put("unfollow", "another@email.com");
         Request unfollowRequest = webb
                 .put("http://localhost:8000/unfollow")
