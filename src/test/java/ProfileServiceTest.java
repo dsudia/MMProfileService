@@ -192,48 +192,6 @@ public class ProfileServiceTest {
     }
 
     @Test
-    public void createUserWithoutEmailSendsError() throws Exception {
-        JSONObject obj = new JSONObject();
-        obj.put("displayName", "Testy");
-        Webb webb = Webb.create();
-        Request request = webb
-                .post("http://localhost:8001/create")
-                .body(obj);
-        Response<JSONObject> response = request
-                .asJsonObject();
-        JSONObject result = response.getBody();
-        if (result == null) {
-            result = new JSONObject(response.getErrorBody().toString());
-        }
-        JSONObject expected = new JSONObject();
-        expected.put("message", "Missing email or display name for creation");
-        expected.put("status", 400);
-        JSONAssert.assertEquals(expected, result, true);
-        assertEquals(400, response.getStatusCode());
-    }
-
-    @Test
-    public void createUserWithoutDisplayNameSendsError() throws Exception {
-        JSONObject obj = new JSONObject();
-        obj.put("email", "testy@test.com");
-        Webb webb = Webb.create();
-        Request request = webb
-                .post("http://localhost:8001/create")
-                .body(obj);
-        Response<JSONObject> response = request
-                .asJsonObject();
-        JSONObject result = response.getBody();
-        if (result == null) {
-            result = new JSONObject(response.getErrorBody().toString());
-        }
-        JSONObject expected = new JSONObject();
-        expected.put("message", "Missing email or display name for creation");
-        expected.put("status", 400);
-        JSONAssert.assertEquals(expected, result, true);
-        assertEquals(400, response.getStatusCode());
-    }
-
-    @Test
     public void getUserByEmailReturnsAllUserInfo() throws Exception {
         JSONObject profile = seedData();
         if (profile != null) {
@@ -276,10 +234,10 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "User does not exist in database");
-        expected.put("status", 409);
+        expected.put("message", "Profile does not exist in database");
+        expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
-        assertEquals(409, response.getStatusCode());
+        assertEquals(400, response.getStatusCode());
     }
 
     @Test
@@ -298,7 +256,7 @@ public class ProfileServiceTest {
         }
         JSONObject expectedResponse = new JSONObject();
         expectedResponse.put("status", 200);
-        expectedResponse.put("message", "User updated");
+        expectedResponse.put("message", "Profile updated");
         JSONAssert.assertEquals(expectedResponse, result, true);
         JSONObject getObj = new JSONObject();
         getObj.put("email", "testy@test.com");
@@ -389,6 +347,45 @@ public class ProfileServiceTest {
     }
 
     @Test
+    public void followUserAlreadyFollowed() throws Exception {
+        JSONObject profile = seedData();
+        JSONObject obj = new JSONObject();
+        obj.put("email", "another@email.com");
+        obj.put("displayName", "another");
+        obj.put("lastName", "profile");
+        obj.put("description", "Mercedem aut nummos unde unde extricat, amaras. Petierunt uti sibi concilium totius Galliae in diem certam indicere. Curabitur est gravida et libero vitae dictum.");
+        obj.put("state", "TX");
+        obj.put("avatarUrl", "http://someurl.com/myimg");
+        Webb webb = Webb.create();
+        webb.post("http://localhost:8001/create").body(obj).asVoid();
+        JSONObject payload = new JSONObject();
+        payload.put("email", profile.getString("email"));
+        payload.put("follow", "another@email.com");
+        webb.put("http://localhost:8001/follow").body(payload).asVoid();
+        Request request = webb.put("http://localhost:8001/follow").body(payload);
+        Response<JSONObject> response = request.asJsonObject();
+        JSONObject expected = new JSONObject();
+        expected.put("status", 400);
+        expected.put("message", "Already following another@email.com");
+        JSONObject result = new JSONObject(response.getErrorBody().toString());
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(400, response.getStatusCode());
+        // Now testing the database
+        JSONObject email = new JSONObject();
+        email.put("email", "testy@test.com");
+        webb = Webb.create();
+        request = webb
+                .post("http://localhost:8001/get")
+                .body(email);
+        response = request.asJsonObject();
+        result = response.getBody();
+        JSONArray followedAndStaff = result.getJSONObject("profile").getJSONArray("followedAndStaff");
+        JSONArray expected2 = new JSONArray();
+        expected2.put("another@email.com");
+        JSONAssert.assertEquals(expected2, followedAndStaff, true);
+    }
+
+    @Test
     public void unfollowUserRemovesEmailFromArray() throws Exception {
         JSONObject profile = seedData();
         JSONObject obj = new JSONObject();
@@ -425,32 +422,6 @@ public class ProfileServiceTest {
         JSONAssert.assertEquals(expected2, followedAndStaff, true);
     }
 
-    @Test
-    public void unfollowUserWithWrongEmailReturnsError() throws Exception {
-        JSONObject profile = seedData();
-        if (profile != null) {
-            JSONObject obj = new JSONObject();
-            obj.put("email", "testy@test.com");
-            obj.put("unfollow", "another@email.com");
-            Webb webb = Webb.create();
-            Request unfollowRequest = webb
-                    .put("http://localhost:8001/unfollow")
-                    .body(obj);
-            Response<JSONObject> response = unfollowRequest
-                    .asJsonObject();
-            JSONObject result = response.getBody();
-            if (result == null) {
-                result = new JSONObject(response.getErrorBody().toString());
-            }
-            JSONObject expected = new JSONObject();
-            expected.put("message", "another@email.com is not a valid user");
-            expected.put("status", 400);
-            JSONAssert.assertEquals(expected, result, true);
-            assertEquals(400, response.getStatusCode());
-        } else {
-            fail("Could not create the user");
-        }
-    }
 
     @Test
     public void unfollowInvalidUserReturnsError() throws Exception {
@@ -468,7 +439,7 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "another@email.com is not a valid user");
+        expected.put("message", "another@email.com is not followed");
         expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(400, response.getStatusCode());
