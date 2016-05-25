@@ -25,6 +25,8 @@ public class ProfileService {
         post("/create", create);
         post("/login", login);
         put("/update", update);
+        put("follow", follow);
+        put("/unfollow", unfollow);
         get("*", error);
         post("*", error);
         put("*", error);
