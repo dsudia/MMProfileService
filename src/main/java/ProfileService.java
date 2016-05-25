@@ -1,10 +1,18 @@
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+
+import java.security.InvalidKeyException;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
 
 public class ProfileService {
 
@@ -20,18 +28,81 @@ public class ProfileService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=postgres");
         port(8000);
         post("/create", create);
-        post("/login", login);
-        put("/update", update);
-        put("follow", follow);
-        put("/unfollow", unfollow);
+//        post("/login", login);
+//        put("/update", update);
+//        put("follow", follow);
+//        put("/unfollow", unfollow);
         get("*", error);
         post("*", error);
         put("*", error);
         delete("*", error);
     }
+
+    private static Route create = new Route() {
+        public Object handle(Request request, Response response) throws Exception {
+            JSONObject profileInfo = new JSONObject(request.body());
+            JSONObject object = new JSONObject();
+            if (!profileInfo.has("email") || !profileInfo.has("displayName")) {
+                object.put("status", 400);
+                object.put("message", "Missing email or display name for creation");
+                response.status(400);
+                response.type("application/json");
+                return object.toString();
+            }
+            String email = profileInfo.getString("email");
+            String displayName = profileInfo.getString("displayName");
+            String lastName = "";
+            String description = "";
+            String state = "";
+            String avatarUrl = "";
+            if (profileInfo.has("lastName")) {
+                lastName = profileInfo.getString("lastName");
+            }
+            if (profileInfo.has("description")) {
+                description = profileInfo.getString("description");
+            }
+            if (profileInfo.has("state")) {
+                state = profileInfo.getString("state");
+            }
+            if (profileInfo.has("avatarUrl")) {
+                avatarUrl = profileInfo.getString("avatarUrl");
+            }
+            String[] newStringArray = new String[0];
+            Connection connection = cpds.getConnection();
+            Array followedAndStaff = connection.createArrayOf("VARCHAR", newStringArray);
+            String query = "select email from profiles where email = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                object.put("status", 409);
+                object.put("message", "Profile already exists");
+                response.status(409);
+                response.type("application/json");
+            } else {
+                query = "insert into profiles VALUES (?, ?, ?, ?, ?, ?, ?)";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                preparedStatement.setString(2, displayName);
+                preparedStatement.setString(3, lastName);
+                preparedStatement.setString(4, description);
+                preparedStatement.setString(5, state);
+                preparedStatement.setString(6, avatarUrl);
+                preparedStatement.setArray(7, followedAndStaff);
+                object.put("status", 201);
+                object.put("message", "Profile created for " + email);
+                response.status(201);
+                response.type("application/json");
+            }
+            resultSet.close();
+            preparedStatement.close();
+            connection.close();
+            return object.toString();
+        }
+    };
 
     private static Route error = new Route() {
         @Override
