@@ -289,6 +289,7 @@ public class ProfileServiceTest {
         Request createRequest = webb
                 .post("http://localhost:8000/create")
                 .body(obj);
+        obj.remove("display_name");
         obj.remove("last_name");
         obj.put("last_name", "Differentlastname");
         Request updateRequest = webb
@@ -343,6 +344,32 @@ public class ProfileServiceTest {
     }
 
     @Test
+    public void followUserWithWrongEmailReturnsError() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/create")
+                .body(obj);
+        obj.remove("display_name");
+        obj.put("follow", "another@email.com");
+        Request followRequest = webb
+                .put("http://localhost:8000/follow")
+                .body(obj);
+        Response<JSONObject> response = followRequest
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "User does not exist in database");
+        expected.put("status", 409);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(409, response.getStatusCode());
+    }
+
+    @Test
     public void unfollowUserRemovesEmailFromArray() throws Exception {
         JSONObject obj = new JSONObject();
         obj.put("email", "testy@test.com");
@@ -375,5 +402,31 @@ public class ProfileServiceTest {
         obj.put("followedAndStaff", jsonArray);
         JSONAssert.assertEquals(obj, result.getJSONObject("profile"), true);
         assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void unfollowUserWithWrongEmailReturnsError() throws Exception {
+        JSONObject obj = new JSONObject();
+        obj.put("email", "testy@test.com");
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8000/get")
+                .body(obj);
+        obj.remove("display_name");
+        obj.put("unfollow", "another@email.com");
+        Request unfollowRequest = webb
+                .put("http://localhost:8000/unfollow")
+                .body(obj);
+        Response<JSONObject> response = unfollowRequest
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result == null) {
+            result = new JSONObject(response.getErrorBody().toString());
+        }
+        JSONObject expected = new JSONObject();
+        expected.put("message", "User does not exist in database");
+        expected.put("status", 409);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(409, response.getStatusCode());
     }
 }
