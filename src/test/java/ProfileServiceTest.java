@@ -205,7 +205,7 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "Missing email address for creation");
+        expected.put("message", "Missing email or display name for creation");
         expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(400, response.getStatusCode());
@@ -226,7 +226,7 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "Missing display name for creation");
+        expected.put("message", "Missing email or display name for creation");
         expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(400, response.getStatusCode());
