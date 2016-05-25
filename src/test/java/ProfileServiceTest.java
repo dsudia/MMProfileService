@@ -34,7 +34,8 @@ public class ProfileServiceTest {
         String dropQuery = "DROP TABLE IF EXISTS public.profiles";
         String query = "CREATE TABLE public.profiles\n" +
                 "(\n" +
-                "  CONSTRAINT users_pkey PRIMARY KEY (email)\n" +
+                "  email character varying NOT NULL,\n" +
+                "  CONSTRAINT users_pkey PRIMARY KEY (email),\n" +
                 "  display_name character varying NOT NULL,\n" +
                 "  last_name character varying,\n" +
                 "  description VARCHAR,\n" +
