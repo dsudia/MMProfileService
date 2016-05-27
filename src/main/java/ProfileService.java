@@ -258,7 +258,7 @@ public class ProfileService {
 
             } else {
                 returner.put("status", 400);
-                returner.put("message", params.getString("unfollow") + " is not a valid user");
+                returner.put("message", params.getString("unfollow") + " is not followed");
                 response.status(400);
             }
             resultSet.close();
