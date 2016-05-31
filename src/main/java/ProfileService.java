@@ -29,7 +29,7 @@ public class ProfileService {
         cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=postgres");
         port(8001);
         post("/create", create);
-        post("/get", get);
+        get("/get", get);
         put("/update", update);
         put("follow", follow);
         put("/unfollow", unfollow);
@@ -106,11 +106,10 @@ public class ProfileService {
     private static Route get = new Route() {
         @Override
         public Object handle(Request request, Response response) throws Exception {
-            String email = new JSONObject(request.body()).getString("email");
             Connection connection = cpds.getConnection();
             String query = "select * from profiles where email = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
+            preparedStatement.setString(1, request.queryParams("profile"));
             ResultSet resultSet = preparedStatement.executeQuery();
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             JSONObject returner = new JSONObject();
@@ -136,6 +135,7 @@ public class ProfileService {
             resultSet.close();
             preparedStatement.close();
             connection.close();;
+            response.type("application/json");
             return returner;
         }
     };
@@ -205,7 +205,7 @@ public class ProfileService {
                         preparedStatement.execute();
                         response.status(200);
                         returner.put("status", 200);
-                        returner.put("message", params.getString("follow") + " followed");
+                        returner.put("message", "You are now following " + params.getString("follow"));
                     } catch (Exception SQLException) {
                         response.status(500);
                         returner.put("status", 500);
@@ -235,30 +235,50 @@ public class ProfileService {
             JSONObject params = new JSONObject(request.body());
             JSONObject returner = new JSONObject();
             Connection connection = cpds.getConnection();
-            String query = "select email from Profiles where email=?;";
+            String query = "select email from profiles where email=?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, params.getString("unfollow"));
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                query = "update profiles " +
-                        "set followed_and_staff = array_remove(followed_and_staff, ?)" +
-                        "where email=?";
+                query = "select followed_and_staff from profiles where email=?;";
                 preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, params.getString("unfollow"));
-                preparedStatement.setString(2, params.getString("email"));
-                try {
-                    preparedStatement.execute();
-                    response.status(200);
-                    returner.put("status", 200);
-                    returner.put("message", params.getString("unfollow") + " unfollowed");
-                } catch (Exception SQLException) {
-                    returner.put("status", 500);
-                    returner.put("message", "Something went wrong on the server");
+                preparedStatement.setString(1, params.getString("email"));
+                resultSet = preparedStatement.executeQuery();
+                resultSet.next();
+                String[] followed = (String[]) resultSet.getArray(1).getArray();
+                boolean alreadyFollowed = false;
+                for (String email : followed) {
+                    if (email.equals(params.getString("unfollow"))) {
+                        alreadyFollowed = true;
+                        break;
+                    }
+                }
+                if (alreadyFollowed) {
+                    query = "update profiles " +
+                            "set followed_and_staff = array_remove(followed_and_staff, ?)" +
+                            "where email=?";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setString(1, params.getString("unfollow"));
+                    preparedStatement.setString(2, params.getString("email"));
+                    try {
+                        preparedStatement.execute();
+                        response.status(200);
+                        returner.put("status", 200);
+                        returner.put("message", "You have unfollowed " + params.getString("unfollow"));
+                    } catch (Exception SQLException) {
+                        response.status(500);
+                        returner.put("status", 500);
+                        returner.put("message", "Something went wrong on the server");
+                    }
+                } else {
+                    response.status(400);
+                    returner.put("status", 400);
+                    returner.put("message", "You are not following " + params.get("unfollow"));
                 }
 
             } else {
                 returner.put("status", 400);
-                returner.put("message", params.getString("unfollow") + " is not followed");
+                returner.put("message", params.getString("unfollow") + " is not a valid user");
                 response.status(400);
             }
             resultSet.close();
