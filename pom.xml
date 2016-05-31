@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ProfileServices</mainClass>
+                            <mainClass>ProfileService</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
