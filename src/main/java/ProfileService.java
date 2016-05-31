@@ -205,7 +205,7 @@ public class ProfileService {
                         preparedStatement.execute();
                         response.status(200);
                         returner.put("status", 200);
-                        returner.put("message", "You are now following " + params.getString("follow"));
+                        returner.put("message", params.getString("follow") + " followed");
                     } catch (Exception SQLException) {
                         response.status(500);
                         returner.put("status", 500);

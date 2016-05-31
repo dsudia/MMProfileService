@@ -199,8 +199,7 @@ public class ProfileServiceTest {
             email.put("email", "testy@test.com");
             Webb webb = Webb.create();
             Request request = webb
-                    .post("http://localhost:8001/get")
-                    .body(email);
+                    .get("http://localhost:8001/get?profile=testy@test.com");
             Response<JSONObject>    response = request
                     .asJsonObject();
             JSONObject result = response.getBody();
@@ -221,12 +220,9 @@ public class ProfileServiceTest {
 
     @Test
     public void getUserByWrongEmailReturnsError() throws Exception {
-        JSONObject obj = new JSONObject();
-        obj.put("email", "testy@test.com");
         Webb webb = Webb.create();
         Request request = webb
-                .post("http://localhost:8001/get")
-                .body(obj);
+                .get("http://localhost:8001/get?email=test@test.com");
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = response.getBody();
@@ -439,7 +435,7 @@ public class ProfileServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
         }
         JSONObject expected = new JSONObject();
-        expected.put("message", "another@email.com is not followed");
+        expected.put("message", "another@email.com is not a valid user");
         expected.put("status", 400);
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(400, response.getStatusCode());
