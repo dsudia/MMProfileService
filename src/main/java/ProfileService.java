@@ -250,6 +250,7 @@ public class ProfileService {
                 for (String email : followed) {
                     if (email.equals(params.getString("unfollow"))) {
                         alreadyFollowed = true;
+                        System.out.println(email);
                         break;
                     }
                 }
