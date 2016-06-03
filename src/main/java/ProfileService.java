@@ -26,7 +26,7 @@ public class ProfileService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=ec2-user");
         port(8001);
         post("/create", create);
         get("/get", get);
