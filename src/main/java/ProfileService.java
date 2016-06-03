@@ -26,10 +26,11 @@ public class ProfileService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=ec2-user");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles");
         port(8001);
         post("/create", create);
         get("/get", get);
+        get("/getmultiple", getMultiple);
         put("/update", update);
         put("follow", follow);
         put("/unfollow", unfollow);
@@ -139,6 +140,53 @@ public class ProfileService {
                     returner.put("message", "Profile does not exist in database");
                     returner.put("status", 400);
                     response.status(400);
+                }
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
+            }
+            response.type("application/json");
+            return returner;
+        }
+    };
+
+    private static Route getMultiple = new Route() {
+        @Override
+        public Object handle(Request request, Response response) throws JSONException {
+            JSONObject returner = new JSONObject();
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select * from profiles where email = ANY (?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setArray(1, connection.createArrayOf("VARCHAR", request.queryParams("profiles").split(",")));
+                System.out.println(preparedStatement);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                while (resultSet.next()) {
+                    JSONObject profile = new JSONObject();
+                    for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                        if (resultSetMetaData.getColumnType(i) == Types.ARRAY) {
+                            profile.put(snakeToCamel(resultSetMetaData.getColumnName(i)), new JSONArray(resultSet.getArray(i).getArray()));
+
+                        } else {
+                            profile.put(snakeToCamel(resultSetMetaData.getColumnName(i)), resultSet.getString(i));
+                        }
+                    }
+                    returner.append("profile", profile);
+                }
+                if (!returner.has("profile")) {
+                    returner.put("message", "Profiles do not exist in database");
+                    returner.put("status", 400);
+                    response.status(400);
+                } else {
+                    returner.put("message", "Returning profile");
+                    returner.put("status", 200);
+                    response.status(200);
                 }
                 resultSet.close();
                 preparedStatement.close();
