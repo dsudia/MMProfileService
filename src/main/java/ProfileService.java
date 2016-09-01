@@ -18,15 +18,8 @@ public class ProfileService {
     public static void main(String[] args) {
         cpds = new ComboPooledDataSource();
         cpds.setJdbcUrl("jdbc:postgresql://localhost/");
-        String host = System.getenv("PG_PORT_5432_TCP_ADDR");
-        String port = System.getenv("PG_PORT_5432_TCP_PORT");
-        if (host == null) {
-            host = "localhost";
-        }
-        if (port == null) {
-            port = "5432";
-        }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Profiles?user=ec2-user");
+        String databaseUrl = System.getenv("DATABASE_URL");
+        cpds.setJdbcUrl(databaseUrl);
         port(8001);
         post("/create", create);
         get("/get", get);
