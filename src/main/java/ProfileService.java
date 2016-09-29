@@ -17,7 +17,6 @@ public class ProfileService {
     private static ComboPooledDataSource cpds;
     public static void main(String[] args) {
         cpds = new ComboPooledDataSource();
-        cpds.setJdbcUrl("jdbc:postgresql://localhost/");
         String databaseUrl = System.getenv("DATABASE_URL");
         cpds.setJdbcUrl(databaseUrl);
         port(8001);
